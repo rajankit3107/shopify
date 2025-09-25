@@ -6,3 +6,78 @@ datasource db {
     provider = "postgresql"
     url      = env("DATABASE_URL")
 }
+
+model User {
+    id        String   @id @default(cuid())
+    email     String   @unique
+    password  String
+    role      Role
+    vendor    Vendor?  @relation("VendorOwner")
+    orders    Order[]  @relation("customerOrders")
+    createdAt DateTime @default(now())
+}
+
+model Vendor {
+    id            String    @id @default(cuid())
+    name          String
+    slug          String    @unique
+    ownerId       String    @unique
+    owner         User      @relation("VendorOwner", fields: [ownerId], references: [id])
+    description   String?
+    logoUrl       String?
+    products      Product[]
+    orders        Order[]   @relation("vendorOrders")
+    payoutBalance Int       @default(0) // paise
+    createdAt     DateTime  @default(now())
+}
+
+model Product {
+    id          String      @id @default(cuid())
+    vendor      Vendor      @relation(fields: [vendorId], references: [id])
+    vendorId    String
+    name        String
+    description String?
+    price       Int // paise
+    stock       Int         @default(0)
+    imageUrl    String?
+    orderItems  OrderItem[] // inverse relation
+    createdAt   DateTime    @default(now())
+}
+
+model Order {
+    id                String      @id @default(cuid())
+    customer          User        @relation("customerOrders", fields: [customerId], references: [id])
+    customerId        String
+    vendor            Vendor      @relation("vendorOrders", fields: [vendorId], references: [id])
+    vendorId          String
+    totalAmount       Int
+    platformFee       Int
+    vendorAmount      Int
+    status            OrderStatus @default(PENDING)
+    items             OrderItem[]
+    razorpayOrderId   String?
+    razorpayPaymentId String?
+    createdAt         DateTime    @default(now())
+}
+
+model OrderItem {
+    id        String  @id @default(cuid())
+    order     Order   @relation(fields: [orderId], references: [id])
+    orderId   String
+    product   Product @relation(fields: [productId], references: [id])
+    productId String
+    name      String
+    price     Int
+    quantity  Int
+}
+
+enum Role {
+    CUSTOMER
+    VENDOR
+}
+
+enum OrderStatus {
+    PENDING
+    PAID
+    CANCELLED
+}
