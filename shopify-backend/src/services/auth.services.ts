@@ -30,8 +30,10 @@ export async function signup(
 
 export async function login(email: string, password: string) {
   const user = await prisma.user.findUnique({
-    where: { email, password },
+    where: { email },
   });
+
+  //   console.log("user", user);
 
   if (!user) throw ApiError.badRequest(`Invalid credentials`);
 
