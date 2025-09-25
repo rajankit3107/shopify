@@ -4,6 +4,7 @@ dotenv.config();
 export default {
   PORT: Number(process.env.PORT || 4000),
   JWT_SECRET: process.env.JWT_SECRET || "changeme",
+  JWT_EXPIRY: process.env.JWT_EXPIRY || "1d",
   RAZORPAY_KEY_ID: process.env.RAZORPAY_KEY_ID || "",
   RAZORPAY_KEY_SECRET: process.env.RAZORPAY_KEY_SECRET || "",
   PLATFORM_FEE_PERCENT: Number(process.env.PLATFORM_FEE_PERCENT ?? 20),
