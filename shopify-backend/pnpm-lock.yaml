@@ -26,6 +26,9 @@ importers:
       jsonwebtoken:
         specifier: ^9.0.2
         version: 9.0.2
+      zod:
+        specifier: ^4.1.11
+        version: 4.1.11
     devDependencies:
       '@types/node':
         specifier: ^24.5.2
@@ -522,6 +525,9 @@ packages:
 
   wrappy@1.0.2:
     resolution: {integrity: sha512-l4Sp/DRseor9wL6EvV2+TuQn63dMkPjZ/sp9XkghTEbV9KlPS1xUsZ3u7/IQO4wxtcFB4bgpQPRcR3QCvezPcQ==}
+
+  zod@4.1.11:
+    resolution: {integrity: sha512-WPsqwxITS2tzx1bzhIKsEs19ABD5vmCVa4xBo2tq/SrV4RNZtfws1EnCWQXM6yh8bD08a1idvkB5MZSBiZsjwg==}
 
 snapshots:
 
@@ -1062,3 +1068,5 @@ snapshots:
   vary@1.1.2: {}
 
   wrappy@1.0.2: {}
+
+  zod@4.1.11: {}
