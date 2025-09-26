@@ -53,6 +53,10 @@ export const deleteProduct = asyncHandler(
     if (!vendor) throw ApiError.forbidden("Forbidden");
 
     await productServices.remove(id, vendor.id);
+
+    return res.status(204).json({
+      message: "deleted successfully",
+    });
   }
 );
 
