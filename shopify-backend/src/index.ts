@@ -2,6 +2,7 @@ import express from "express";
 import authRoutes from "./routes/auth.routes";
 import vendorRoutes from "./routes/vendor.routes";
 import productRoutes from "./routes/product.routes";
+import paymentRoutes from "./routes/payment.routes";
 import config from "./config";
 import dotenv from "dotenv";
 import { errorHandler } from "./middlewares/errorHandler";
@@ -14,6 +15,7 @@ app.use(express.json());
 app.use("/api/auth", authRoutes);
 app.use("/api/vendors", vendorRoutes);
 app.use("/api/product", productRoutes);
+app.use("/api/payments", paymentRoutes);
 
 app.get("/health", (_req, res) => res.json({ ok: true }));
 app.use(errorHandler);
