@@ -1,9 +1,12 @@
 import "./App.css";
+import Header from "./components/header";
 
 function App() {
   return (
     <>
-      <div className="bg-amber-800">Hi there</div>
+      <div>
+        <Header />
+      </div>
     </>
   );
 }
