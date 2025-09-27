@@ -10,10 +10,14 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
-interface Product {
-  id: string;
+export interface ProductProps {
   name: string;
-  price: number; // in paise
+  description: string | null;
+  price: number;
+  stock: number;
+  vendorId: string;
+  id: string;
+  createdAt: Date;
   vendor?: {
     slug: string;
     name: string;
@@ -22,7 +26,7 @@ interface Product {
 }
 
 export default function Marketplace() {
-  const [products, setProducts] = useState<Product[]>([]);
+  const [products, setProducts] = useState<ProductProps[]>([]);
 
   useEffect(() => {
     client
@@ -32,7 +36,7 @@ export default function Marketplace() {
   }, []);
 
   return (
-    <div className="py-8 px-4">
+    <div className="py-8">
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
         {products.map((p) => (
           <Card

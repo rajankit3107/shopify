@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Link } from "react-router-dom";
 
-interface Store {
+export interface Store {
   id: string;
   name: string;
   imageUrl: string;
