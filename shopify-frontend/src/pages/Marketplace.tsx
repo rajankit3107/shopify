@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import client from "../api";
 import { Link } from "react-router-dom";
 import {
@@ -32,8 +32,8 @@ export default function Marketplace() {
   }, []);
 
   return (
-    <div className="py-8 px-1">
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-10">
+    <div className="py-8 px-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
         {products.map((p) => (
           <Card
             key={p.id}

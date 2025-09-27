@@ -1,59 +1,46 @@
 import { Link, useLocation } from "react-router-dom";
-import { motion } from "framer-motion";
+import { Button } from "./ui/button";
 
 export default function Header() {
   const location = useLocation();
 
   const navLinks = [
-    { to: "/cart", label: "Cart" },
-    { to: "/vendor/dashboard", label: "Vendor" },
+    { name: "Cart", path: "/cart" },
+    { name: "Vendor", path: "/vendor/dashboard" },
   ];
 
   return (
-    <header className="bg-white shadow-md">
+    <header className="bg-white shadow-lg sticky top-0 z-50">
       <div className="container mx-auto flex items-center justify-between px-6 py-4">
-        {/* Logo */}
         <Link
           to="/"
-          className="text-xl font-bold text-gray-800 hover:text-gray-900"
+          className="text-xl font-bold text-gray-800 hover:text-gray-900 transition-colors"
         >
-          Shopify
+          Shopifyy
         </Link>
 
-        {/* Navigation */}
-        <nav className="flex items-center gap-8 text-gray-600 relative">
-          {navLinks.map((link) => {
-            const isActive = location.pathname.startsWith(link.to);
-            return (
-              <div key={link.to} className="relative">
-                <Link to={link.to} className="hover:text-gray-900">
-                  {link.label}
-                </Link>
-                {isActive && (
-                  <motion.div
-                    layoutId="underline"
-                    className="absolute left-0 -bottom-1 h-[2px] w-full bg-blue-600"
-                    transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                  />
-                )}
-              </div>
-            );
-          })}
+        <nav className="flex items-center gap-6 text-gray-600">
+          {navLinks.map((link) => (
+            <Link
+              key={link.name}
+              to={link.path}
+              className={`hover:text-gray-900 hover:underline underline-offset-4 transition-all ${
+                location.pathname === link.path ? "text-gray-900 underline" : ""
+              }`}
+            >
+              {link.name}
+            </Link>
+          ))}
         </nav>
 
-        {/* Auth */}
         <div className="flex items-center gap-4">
-          <Link
-            to="/login"
-            className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900"
-          >
-            Login
+          <Link to="/login">
+            <Button className="cursor-pointer" variant="outline">
+              Login
+            </Button>
           </Link>
-          <Link
-            to="/signup"
-            className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700"
-          >
-            Sign up
+          <Link to="/signup">
+            <Button className="cursor-pointer">Sign Up</Button>
           </Link>
         </div>
       </div>
