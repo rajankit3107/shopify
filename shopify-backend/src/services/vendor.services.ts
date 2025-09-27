@@ -37,5 +37,13 @@ export async function getBySlug(slug: string) {
 }
 
 export async function listAll() {
-  return prisma.vendor.findMany({ include: { products: true } });
+  return prisma.vendor.findMany({
+    include: {
+      _count: {
+        select: {
+          products: true,
+        },
+      },
+    },
+  });
 }

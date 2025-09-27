@@ -79,3 +79,22 @@ export const listProducts = asyncHandler(
     return res.json(products);
   }
 );
+
+export const getVendorProducts = asyncHandler(
+  async (req: AuthRequest, res: Response) => {
+    if (!req.user) throw ApiError.unauthorized("Unauthorized");
+
+    const vendor = await prisma.vendor.findUnique({
+      where: { ownerId: req.user.id },
+    });
+
+    if (!vendor) throw ApiError.unauthorized("Vendor not found");
+
+    const products = await prisma.product.findMany({
+      where: { vendorId: vendor.id },
+      orderBy: { createdAt: "desc" },
+    });
+
+    return res.json(products);
+  }
+);
