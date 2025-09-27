@@ -2,6 +2,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "./ui/button";
 import { useState, useEffect } from "react";
 import { setAuthToken } from "../api";
+import { Menu } from "lucide-react";
 
 export default function Header() {
   const location = useLocation();
@@ -17,21 +18,15 @@ export default function Header() {
       setUserRole(role);
       setAuthToken(token);
     }
-  }, [location]); // Re-check authentication on location change
+  }, [location]);
 
   const handleLogout = () => {
-    // Clear all authentication-related items from localStorage
     localStorage.removeItem("token");
     localStorage.removeItem("role");
-    localStorage.removeItem("userRole");
     localStorage.removeItem("userId");
-    
-    // Reset authentication state
     setIsAuthenticated(false);
     setUserRole(null);
     setAuthToken("");
-    
-    // Redirect to home page
     navigate("/");
   };
 
@@ -42,49 +37,52 @@ export default function Header() {
   ];
 
   if (userRole === "VENDOR") {
-    navLinks.push({ name: "Dashboard", path: "/vendor/dashboard" });
-    navLinks.push({ name: "Create Store", path: "/vendor/create" });
-    navLinks.push({ name: "Products", path: "/vendor/products" });
-    navLinks.push({ name: "Orders", path: "/vendor/orders" });
-    navLinks.push({ name: "Analytics", path: "/vendor/analytics" });
+    navLinks.push(
+      { name: "Dashboard", path: "/vendor/dashboard" },
+      { name: "Create Store", path: "/vendor/create" },
+      { name: "Products", path: "/vendor/products" },
+      { name: "Orders", path: "/vendor/orders" },
+    );
   }
 
   return (
-    <header className="shadow-lg sticky top-0 z-50 border-b backdrop-blur-sm bg-white/95">
-      <div className="container mx-auto flex items-center justify-between px-6 py-4">
+    <header className="sticky top-0 z-50 border-b bg-white/90 backdrop-blur-sm shadow-sm">
+      <div className="container mx-auto flex items-center justify-between px-6 py-3">
+        {/* Logo */}
         <Link
           to="/"
-          className="text-2xl font-bold text-indigo-600 hover:text-indigo-700 transition-colors"
+          className="text-2xl font-extrabold text-indigo-600 tracking-tight hover:text-indigo-700 transition-colors"
         >
           Shopify
         </Link>
 
-        <nav className="hidden md:flex items-center gap-6 text-gray-600">
+        {/* Desktop Nav */}
+        <nav className="hidden md:flex items-center gap-4">
           {navLinks.map((link) => (
-            <Link
-              key={link.name}
-              to={link.path}
-              className={`hover:text-gray-900 hover:underline underline-offset-4 transition-all font-medium ${
-                location.pathname === link.path
-                  ? "text-indigo-600 underline"
-                  : ""
-              }`}
-            >
-              {link.name}
+            <Link key={link.name} to={link.path}>
+              <span
+                className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                  location.pathname === link.path
+                    ? "bg-indigo-100 text-indigo-700"
+                    : "text-gray-600 hover:text-indigo-600 hover:bg-gray-100"
+                }`}
+              >
+                {link.name}
+              </span>
             </Link>
           ))}
         </nav>
 
-        <div className="flex items-center gap-4">
+        {/* Auth Section */}
+        <div className="flex items-center gap-3">
           {isAuthenticated ? (
-            <div className="flex items-center gap-4">
-              <div className="hidden sm:flex items-center gap-2">
-                <div className="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center">
-                  <span className="text-indigo-600 text-sm font-medium">
-                    {userRole?.charAt(0).toUpperCase()}
-                  </span>
+            <div className="flex items-center gap-3">
+              {/* Role Badge */}
+              <div className="flex items-center gap-2 bg-indigo-50 px-3 py-1 rounded-full">
+                <div className="w-7 h-7 bg-indigo-200 rounded-full flex items-center justify-center text-sm font-bold text-indigo-700">
+                  {userRole?.charAt(0).toUpperCase()}
                 </div>
-                <span className="text-sm text-gray-600">
+                <span className="text-xs font-medium capitalize text-indigo-700">
                   {userRole?.toLowerCase()}
                 </span>
               </div>
@@ -92,7 +90,7 @@ export default function Header() {
               <Button
                 onClick={handleLogout}
                 variant="outline"
-                className="cursor-pointer hover:bg-red-50 hover:text-red-600 hover:border-red-200 transition-colors"
+                className="cursor-pointer hover:bg-red-50 hover:text-red-600 hover:border-red-200 transition-colors text-sm"
               >
                 Logout
               </Button>
@@ -100,16 +98,23 @@ export default function Header() {
           ) : (
             <>
               <Link to="/login">
-                <Button className="cursor-pointer" variant="outline">
+                <Button variant="outline" size="sm" className="cursor-pointer">
                   Login
                 </Button>
               </Link>
               <Link to="/signup">
-                <Button className="cursor-pointer">Sign Up</Button>
+                <Button size="sm" className="cursor-pointer">
+                  Sign Up
+                </Button>
               </Link>
             </>
           )}
         </div>
+
+        {/* Mobile Menu Icon */}
+        <button className="md:hidden p-2 rounded-lg hover:bg-gray-100">
+          <Menu className="w-6 h-6 text-gray-600" />
+        </button>
       </div>
     </header>
   );

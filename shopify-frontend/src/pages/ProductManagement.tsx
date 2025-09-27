@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, type JSX } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import client, { setAuthToken } from "../api";
 import { Button } from "@/components/ui/button";
@@ -23,7 +23,7 @@ interface Product {
   id: string;
   name: string;
   description: string | null;
-  price: number;
+  price: number; // stored in paise
   stock: number;
   imageUrl: string | null;
   createdAt: string;
@@ -41,9 +41,11 @@ export default function ProductManagement() {
   const [products, setProducts] = useState<Product[]>([]);
   const [vendor, setVendor] = useState<Vendor | null>(null);
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -67,23 +69,19 @@ export default function ProductManagement() {
       setLoading(true);
       setError("");
 
-      // Fetch vendor info
       const vendorResponse = await client.get("/vendor/me");
       setVendor(vendorResponse.data);
 
-      // Fetch products
       const productsResponse = await client.get("/products/vendor");
       setProducts(productsResponse.data);
     } catch (err: unknown) {
       console.error("Error fetching data:", err);
-      const errorMessage = (
-        err as { response?: { data?: { message?: string }; status?: number } }
-      )?.response?.data?.message;
-      const status = (
-        err as { response?: { data?: { message?: string }; status?: number } }
-      )?.response?.status;
 
-      if (status === 404 && errorMessage?.includes("Vendor not found")) {
+      const response = (err as { response?: { data?: any; status?: number } })
+        .response;
+      const errorMessage = response?.data?.message;
+
+      if (response?.status === 404 && errorMessage?.includes("Vendor not found")) {
         setError(
           "Please create a store first before managing products. Click 'Create Store' to get started."
         );
@@ -96,10 +94,7 @@ export default function ProductManagement() {
   };
 
   const handleInputChange = (field: string, value: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
+    setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
   const resetForm = () => {
@@ -116,15 +111,15 @@ export default function ProductManagement() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
+    setSaving(true);
     setError("");
 
     try {
       const productData = {
-        name: formData.name,
+        name: formData.name.trim(),
         description: formData.description || undefined,
-        price: parseInt(formData.price) * 100, // Convert to paise
-        stock: parseInt(formData.stock) || 0,
+        price: parseInt(formData.price, 10) * 100, // ₹ → paise
+        stock: parseInt(formData.stock, 10) || 0,
         imageUrl: formData.imageUrl || undefined,
       };
 
@@ -143,7 +138,7 @@ export default function ProductManagement() {
           ?.message || "Failed to save product"
       );
     } finally {
-      setLoading(false);
+      setSaving(false);
     }
   };
 
@@ -152,7 +147,7 @@ export default function ProductManagement() {
     setFormData({
       name: product.name,
       description: product.description || "",
-      price: (product.price / 100).toString(), // Convert from paise
+      price: (product.price / 100).toString(),
       stock: product.stock.toString(),
       imageUrl: product.imageUrl || "",
     });
@@ -163,7 +158,7 @@ export default function ProductManagement() {
     if (!confirm("Are you sure you want to delete this product?")) return;
 
     try {
-      setLoading(true);
+      setSaving(true);
       await client.delete(`/products/${productId}`);
       await fetchData();
     } catch (err: unknown) {
@@ -173,7 +168,7 @@ export default function ProductManagement() {
           ?.message || "Failed to delete product"
       );
     } finally {
-      setLoading(false);
+      setSaving(false);
     }
   };
 
@@ -182,10 +177,9 @@ export default function ProductManagement() {
     0
   );
   const totalProducts = products.length;
-  const lowStockProducts = products.filter(
-    (product) => product.stock < 10
-  ).length;
+  const lowStockProducts = products.filter((p) => p.stock < 10).length;
 
+  // 🔹 Loading screen
   if (loading && !vendor) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -197,34 +191,30 @@ export default function ProductManagement() {
     );
   }
 
-  // Show error state if vendor not found
+  // 🔹 Vendor not found screen
   if (error && error.includes("create a store first")) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 py-8">
-        <div className="container mx-auto px-4">
-          <div className="text-center">
-            <div className="text-gray-400 text-8xl mb-6">🏪</div>
-            <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-              Store Required
-            </h1>
-            <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
-              You need to create a store before you can manage products. This
-              helps us organize your products and provide a better shopping
-              experience for customers.
-            </p>
-            <div className="space-y-4">
-              <Link to="/vendor/create">
-                <Button className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 px-8 py-4 text-lg">
-                  Create Your Store
+        <div className="container mx-auto px-4 text-center">
+          <div className="text-gray-400 text-8xl mb-6">🏪</div>
+          <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+            Store Required
+          </h1>
+          <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
+            You need to create a store before you can manage products.
+          </p>
+          <div className="space-y-4">
+            <Link to="/vendor/create">
+              <Button className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 px-8 py-4 text-lg">
+                Create Your Store
+              </Button>
+            </Link>
+            <div>
+              <Link to="/vendor/dashboard">
+                <Button variant="outline" className="px-6 py-3">
+                  Back to Dashboard
                 </Button>
               </Link>
-              <div>
-                <Link to="/vendor/dashboard">
-                  <Button variant="outline" className="px-6 py-3">
-                    Back to Dashboard
-                  </Button>
-                </Link>
-              </div>
             </div>
           </div>
         </div>
@@ -232,295 +222,60 @@ export default function ProductManagement() {
     );
   }
 
+  // 🔹 Main UI
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-8">
       <div className="container mx-auto px-4">
         {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-4xl font-bold mb-2 bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-                Product Management
-              </h1>
-              <p className="text-gray-600 text-lg">
-                Manage your products and inventory
-              </p>
-            </div>
-            <Button
-              onClick={() => setShowCreateForm(true)}
-              className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 px-6 py-3 text-lg"
-            >
-              <Plus className="w-5 h-5 mr-2" />
-              Add Product
-            </Button>
+        <div className="mb-8 flex items-center justify-between">
+          <div>
+            <h1 className="text-4xl font-bold mb-2 bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+              Product Management
+            </h1>
+            <p className="text-gray-600 text-lg">Manage your products and inventory</p>
           </div>
+          <Button
+            onClick={() => setShowCreateForm(true)}
+            className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 px-6 py-3 text-lg"
+          >
+            <Plus className="w-5 h-5 mr-2" />
+            Add Product
+          </Button>
         </div>
 
-        {/* Stats Cards */}
+        {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
-            <CardContent className="p-6">
-              <div className="flex items-center">
-                <Package className="h-8 w-8 text-indigo-600" />
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">
-                    Total Products
-                  </p>
-                  <p className="text-2xl font-bold text-gray-900">
-                    {totalProducts}
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
-            <CardContent className="p-6">
-              <div className="flex items-center">
-                <DollarSign className="h-8 w-8 text-green-600" />
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">
-                    Inventory Value
-                  </p>
-                  <p className="text-2xl font-bold text-gray-900">
-                    ₹{(totalValue / 100).toLocaleString()}
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
-            <CardContent className="p-6">
-              <div className="flex items-center">
-                <TrendingUp className="h-8 w-8 text-orange-600" />
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Low Stock</p>
-                  <p className="text-2xl font-bold text-gray-900">
-                    {lowStockProducts}
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
-            <CardContent className="p-6">
-              <div className="flex items-center">
-                <DollarSign className="h-8 w-8 text-purple-600" />
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">
-                    Payout Balance
-                  </p>
-                  <p className="text-2xl font-bold text-gray-900">
-                    ₹
-                    {vendor
-                      ? (vendor.payoutBalance / 100).toLocaleString()
-                      : "0"}
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          <StatCard icon={<Package className="h-8 w-8 text-indigo-600" />} label="Total Products" value={totalProducts} />
+          <StatCard icon={<DollarSign className="h-8 w-8 text-green-600" />} label="Inventory Value" value={`₹${(totalValue / 100).toLocaleString()}`} />
+          <StatCard icon={<TrendingUp className="h-8 w-8 text-orange-600" />} label="Low Stock" value={lowStockProducts} />
+          <StatCard icon={<DollarSign className="h-8 w-8 text-purple-600" />} label="Payout Balance" value={`₹${(vendor?.payoutBalance ?? 0) / 100}`} />
         </div>
 
         {/* Create/Edit Form */}
         {showCreateForm && (
-          <Card className="mb-8 bg-white/80 backdrop-blur-sm border-0 shadow-xl">
-            <CardHeader>
-              <CardTitle className="text-xl font-bold text-gray-900">
-                {editingProduct ? "Edit Product" : "Add New Product"}
-              </CardTitle>
-            </CardHeader>
-            <form onSubmit={handleSubmit}>
-              <CardContent className="space-y-4">
-                {error && (
-                  <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-md text-sm">
-                    {error}
-                  </div>
-                )}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Product Name *
-                    </label>
-                    <Input
-                      required
-                      value={formData.name}
-                      onChange={(e) =>
-                        handleInputChange("name", e.target.value)
-                      }
-                      placeholder="Enter product name"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Price (₹) *
-                    </label>
-                    <Input
-                      required
-                      type="number"
-                      min="0"
-                      step="0.01"
-                      value={formData.price}
-                      onChange={(e) =>
-                        handleInputChange("price", e.target.value)
-                      }
-                      placeholder="0.00"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Stock Quantity *
-                    </label>
-                    <Input
-                      required
-                      type="number"
-                      min="0"
-                      value={formData.stock}
-                      onChange={(e) =>
-                        handleInputChange("stock", e.target.value)
-                      }
-                      placeholder="0"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Image URL
-                    </label>
-                    <Input
-                      type="url"
-                      value={formData.imageUrl}
-                      onChange={(e) =>
-                        handleInputChange("imageUrl", e.target.value)
-                      }
-                      placeholder="https://example.com/image.jpg"
-                    />
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Description
-                  </label>
-                  <textarea
-                    value={formData.description}
-                    onChange={(e) =>
-                      handleInputChange("description", e.target.value)
-                    }
-                    placeholder="Describe your product..."
-                    className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 resize-none"
-                    rows={3}
-                  />
-                </div>
-              </CardContent>
-              <CardFooter className="flex gap-4">
-                <Button
-                  type="submit"
-                  className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700"
-                  disabled={loading}
-                >
-                  {loading
-                    ? "Saving..."
-                    : editingProduct
-                    ? "Update Product"
-                    : "Add Product"}
-                </Button>
-                <Button type="button" variant="outline" onClick={resetForm}>
-                  Cancel
-                </Button>
-              </CardFooter>
-            </form>
-          </Card>
+          <ProductForm
+            error={error}
+            formData={formData}
+            editingProduct={editingProduct}
+            saving={saving}
+            handleSubmit={handleSubmit}
+            handleInputChange={handleInputChange}
+            resetForm={resetForm}
+          />
         )}
 
         {/* Products List */}
         <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-xl">
           <CardHeader>
-            <CardTitle className="text-xl font-bold text-gray-900">
-              Your Products
-            </CardTitle>
+            <CardTitle className="text-xl font-bold text-gray-900">Your Products</CardTitle>
           </CardHeader>
           <CardContent className="p-0">
             {products.length === 0 ? (
-              <div className="text-center py-16">
-                <div className="text-gray-400 text-6xl mb-4">📦</div>
-                <h3 className="text-xl font-medium text-gray-900 mb-2">
-                  No products yet
-                </h3>
-                <p className="text-gray-600 mb-6">
-                  Start by adding your first product to your store.
-                </p>
-                <Button
-                  onClick={() => setShowCreateForm(true)}
-                  className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700"
-                >
-                  <Plus className="w-4 h-4 mr-2" />
-                  Add Your First Product
-                </Button>
-              </div>
+              <EmptyProducts onAdd={() => setShowCreateForm(true)} />
             ) : (
               <div className="divide-y">
                 {products.map((product) => (
-                  <div
-                    key={product.id}
-                    className="p-6 hover:bg-gray-50 transition-colors"
-                  >
-                    <div className="flex items-start gap-4">
-                      <div className="w-20 h-20 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                        {product.imageUrl ? (
-                          <img
-                            src={product.imageUrl}
-                            alt={product.name}
-                            className="w-full h-full object-cover rounded-lg"
-                          />
-                        ) : (
-                          <Package className="w-8 h-8 text-gray-400" />
-                        )}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-1">
-                          {product.name}
-                        </h3>
-                        {product.description && (
-                          <p className="text-gray-600 text-sm mb-2 line-clamp-2">
-                            {product.description}
-                          </p>
-                        )}
-                        <div className="flex items-center gap-4 text-sm text-gray-500">
-                          <span className="font-medium text-green-600">
-                            ₹{(product.price / 100).toLocaleString()}
-                          </span>
-                          <span>Stock: {product.stock}</span>
-                          <span>
-                            Created:{" "}
-                            {new Date(product.createdAt).toLocaleDateString()}
-                          </span>
-                          {product.stock < 10 && (
-                            <span className="text-orange-600 font-medium">
-                              Low Stock
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                      <div className="flex gap-2">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleEdit(product)}
-                        >
-                          <Edit className="w-4 h-4" />
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleDelete(product.id)}
-                          className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
+                  <ProductRow key={product.id} product={product} onEdit={handleEdit} onDelete={handleDelete} />
                 ))}
               </div>
             )}
@@ -528,5 +283,149 @@ export default function ProductManagement() {
         </Card>
       </div>
     </div>
+  );
+}
+
+/* 🔹 Helper Components */
+function StatCard({ icon, label, value }: { icon: JSX.Element; label: string; value: string | number }) {
+  return (
+    <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
+      <CardContent className="p-6 flex items-center">
+        {icon}
+        <div className="ml-4">
+          <p className="text-sm font-medium text-gray-600">{label}</p>
+          <p className="text-2xl font-bold text-gray-900">{value}</p>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function EmptyProducts({ onAdd }: { onAdd: () => void }) {
+  return (
+    <div className="text-center py-16">
+      <div className="text-gray-400 text-6xl mb-4">📦</div>
+      <h3 className="text-xl font-medium text-gray-900 mb-2">No products yet</h3>
+      <p className="text-gray-600 mb-6">Start by adding your first product to your store.</p>
+      <Button onClick={onAdd} className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700">
+        <Plus className="w-4 h-4 mr-2" /> Add Your First Product
+      </Button>
+    </div>
+  );
+}
+
+function ProductRow({ product, onEdit, onDelete }: { product: Product; onEdit: (p: Product) => void; onDelete: (id: string) => void }) {
+  return (
+    <div className="p-6 hover:bg-gray-50 transition-colors flex items-start gap-4">
+      <div className="w-20 h-20 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0">
+        {product.imageUrl ? (
+          <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover rounded-lg" />
+        ) : (
+          <Package className="w-8 h-8 text-gray-400" />
+        )}
+      </div>
+      <div className="flex-1 min-w-0">
+        <h3 className="text-lg font-semibold text-gray-900 mb-1">{product.name}</h3>
+        {product.description && <p className="text-gray-600 text-sm mb-2 line-clamp-2">{product.description}</p>}
+        <div className="flex items-center gap-4 text-sm text-gray-500">
+          <span className="font-medium text-green-600">₹{(product.price / 100).toLocaleString()}</span>
+          <span>Stock: {product.stock}</span>
+          <span>Created: {new Date(product.createdAt).toLocaleDateString()}</span>
+          {product.stock < 10 && <span className="text-orange-600 font-medium">Low Stock</span>}
+        </div>
+      </div>
+      <div className="flex gap-2">
+        <Button size="sm" variant="outline" onClick={() => onEdit(product)}>
+          <Edit className="w-4 h-4" />
+        </Button>
+        <Button size="sm" variant="outline" onClick={() => onDelete(product.id)} className="text-red-600 hover:text-red-700 hover:bg-red-50">
+          <Trash2 className="w-4 h-4" />
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+function ProductForm({
+  error,
+  formData,
+  editingProduct,
+  saving,
+  handleSubmit,
+  handleInputChange,
+  resetForm,
+}: {
+  error: string;
+  formData: { name: string; description: string; price: string; stock: string; imageUrl: string };
+  editingProduct: Product | null;
+  saving: boolean;
+  handleSubmit: (e: React.FormEvent) => void;
+  handleInputChange: (field: string, value: string) => void;
+  resetForm: () => void;
+}) {
+  return (
+    <Card className="mb-8 bg-white/80 backdrop-blur-sm border-0 shadow-xl">
+      <CardHeader>
+        <CardTitle className="text-xl font-bold text-gray-900">
+          {editingProduct ? "Edit Product" : "Add New Product"}
+        </CardTitle>
+      </CardHeader>
+      <form onSubmit={handleSubmit}>
+        <CardContent className="space-y-4">
+          {error && <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-md text-sm">{error}</div>}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Product Name *</label>
+              <Input required value={formData.name} onChange={(e) => handleInputChange("name", e.target.value)} placeholder="Enter product name" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Price (₹) *</label>
+              <Input
+                required
+                type="number"
+                min="0"
+                step="0.01"
+                value={formData.price}
+                onChange={(e) => handleInputChange("price", e.target.value)}
+                placeholder="0.00"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Stock Quantity *</label>
+              <Input
+                required
+                type="number"
+                min="0"
+                value={formData.stock}
+                onChange={(e) => handleInputChange("stock", e.target.value)}
+                placeholder="0"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Image URL</label>
+              <Input type="url" value={formData.imageUrl} onChange={(e) => handleInputChange("imageUrl", e.target.value)} placeholder="https://example.com/image.jpg" />
+            </div>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+            <textarea
+              value={formData.description}
+              onChange={(e) => handleInputChange("description", e.target.value)}
+              placeholder="Describe your product..."
+              className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 resize-none"
+              rows={3}
+            />
+          </div>
+        </CardContent>
+        <CardFooter className="flex gap-4">
+          <Button type="submit" className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700" disabled={saving}>
+            {saving ? "Saving..." : editingProduct ? "Update Product" : "Add Product"}
+          </Button>
+          <Button type="button" variant="outline" onClick={resetForm}>
+            Cancel
+          </Button>
+        </CardFooter>
+      </form>
+    </Card>
   );
 }

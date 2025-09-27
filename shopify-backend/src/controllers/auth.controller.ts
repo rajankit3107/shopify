@@ -21,9 +21,7 @@ export const signup = asyncHandler(async (req: Request, res: Response) => {
 
 export const login = asyncHandler(async (req: Request, res: Response) => {
   const body = loginSchema.safeParse(req.body);
-  //   console.log(body);
   if (!body.success) throw ApiError.badRequest("Invalid credentials");
-  //   console.log(body.success);
 
   const { email, password } = req.body;
 

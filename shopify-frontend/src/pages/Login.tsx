@@ -26,7 +26,8 @@ export default function Login() {
     try {
       const res = await client.post("/auth/login", { email, password });
       localStorage.setItem("token", res.data.token);
-      localStorage.setItem("userRole", res.data.role);
+      localStorage.setItem("role", res.data.user.role);
+      localStorage.setItem("userId", res.data.user.id);
       setAuthToken(res.data.token);
       nav("/");
     } catch (err: unknown) {
@@ -40,27 +41,29 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-50 via-white to-purple-50 py-12 px-4 sm:px-6 lg:px-8">
-      <Card className="w-full max-w-md bg-white/80 backdrop-blur-sm border-0 shadow-2xl">
-        <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-bold text-gray-900">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-50 via-white to-purple-50 px-4">
+      <Card className="w-full max-w-lg bg-white/90 backdrop-blur-lg border border-gray-100 shadow-lg">
+        <CardHeader className="text-center pb-2">
+          <CardTitle className="text-2xl font-semibold text-gray-900">
             Sign in to your account
           </CardTitle>
-          <p className="text-sm text-gray-600 mt-2">
-            Welcome back! Please enter your details.
+          <p className="text-sm text-gray-500 mt-1">
+            Welcome back! Please enter your credentials.
           </p>
         </CardHeader>
-        <form onSubmit={submit}>
-          <CardContent className="space-y-4">
+
+        <form onSubmit={submit} className="space-y-6">
+          <CardContent className="space-y-5">
             {error && (
-              <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-md text-sm">
+              <div className="bg-red-50 border border-red-200 text-red-600 px-3 py-2 rounded-md text-sm">
                 {error}
               </div>
             )}
-            <div>
+
+            <div className="space-y-1">
               <label
                 htmlFor="email"
-                className="block text-sm font-medium text-gray-700 mb-1"
+                className="block text-sm font-medium text-gray-700"
               >
                 Email address
               </label>
@@ -70,14 +73,15 @@ export default function Login() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="Enter your email"
-                className="w-full"
+                placeholder="you@example.com"
+                className="focus:ring-2 focus:ring-indigo-500"
               />
             </div>
-            <div>
+
+            <div className="space-y-1">
               <label
                 htmlFor="password"
-                className="block text-sm font-medium text-gray-700 mb-1"
+                className="block text-sm font-medium text-gray-700"
               >
                 Password
               </label>
@@ -87,21 +91,30 @@ export default function Login() {
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="Enter your password"
-                className="w-full"
+                placeholder="••••••••"
+                className="focus:ring-2 focus:ring-indigo-500"
               />
+              <div className="text-right mt-1">
+                <Link
+                  to="/forgot-password"
+                  className="text-xs text-indigo-600 hover:text-indigo-500"
+                >
+                  Forgot password?
+                </Link>
+              </div>
             </div>
           </CardContent>
-          <CardFooter className="flex flex-col space-y-4">
+
+          <CardFooter className="flex flex-col gap-4 pt-0">
             <Button
               type="submit"
-              className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 transition-all duration-200 shadow-lg hover:shadow-xl"
+              className="w-full bg-indigo-600 hover:bg-indigo-700 transition cursor-pointer"
               disabled={loading}
             >
               {loading ? "Signing in..." : "Sign in"}
             </Button>
             <p className="text-center text-sm text-gray-600">
-              Don't have an account?{" "}
+              Don’t have an account?{" "}
               <Link
                 to="/signup"
                 className="font-medium text-indigo-600 hover:text-indigo-500"

@@ -24,8 +24,15 @@ export const createorder = asyncHandler(
       order.id,
       order.totalAmount
     );
+    
+    // Add key_id to the response
+    const config = require("../config").default;
+    const razorpayResponse = {
+      ...razorOrder,
+      key_id: config.RAZORPAY_KEY_ID 
+    };
 
-    return res.status(201).json({ order, razorpay: razorOrder });
+    return res.status(201).json({ order, razorpay: razorpayResponse });
   }
 );
 

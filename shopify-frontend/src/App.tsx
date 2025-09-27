@@ -1,4 +1,4 @@
-import { Route, Routes, Navigate } from "react-router-dom";
+import { Route, Routes, Navigate, useLocation } from "react-router-dom";
 import "./App.css";
 import Header from "./components/header";
 import Marketplace from "./pages/Marketplace";
@@ -19,6 +19,7 @@ function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [userRole, setUserRole] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const location = useLocation();
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -26,9 +27,12 @@ function App() {
     if (token) {
       setIsAuthenticated(true);
       setUserRole(role);
+    } else {
+      setIsAuthenticated(false);
+      setUserRole(null);
     }
     setLoading(false);
-  }, []);
+  }, [location]); // Re-check on location change
 
   if (loading) {
     return (

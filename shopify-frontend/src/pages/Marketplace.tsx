@@ -32,20 +32,22 @@ export default function Marketplace() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
-  
 
   useEffect(() => {
     const fetchProducts = async () => {
       try {
         setLoading(true);
         const response = await client.get("/product");
-        const allProducts = response.data;
+        const allProducts: ProductProps[] = response.data;
+
         setProducts(allProducts);
-        
-        // Select featured products (newest products with stock > 0)
-        const available = allProducts.filter((p: ProductProps) => p.stock > 0);
-        const sorted = [...available].sort((a: ProductProps, b: ProductProps) => 
-          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+
+        // Featured = latest 3 available products
+        const available = allProducts.filter((p) => p.stock > 0);
+        const sorted = [...available].sort(
+          (a, b) =>
+            new Date(b.createdAt).getTime() -
+            new Date(a.createdAt).getTime()
         );
         setFeaturedProducts(sorted.slice(0, 3));
       } catch (err: unknown) {
@@ -60,8 +62,6 @@ export default function Marketplace() {
 
     fetchProducts();
   }, []);
-
-
 
   const filteredProducts = products.filter(
     (product) =>
@@ -93,48 +93,49 @@ export default function Marketplace() {
           </p>
 
           {/* Featured Products Section */}
-          <div className="mb-8">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4">
-              Featured Products
-            </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {featuredProducts.map((product) => (
-                <Link 
-                  to={`/product/${product.id}`}
-                  key={`featured-${product.id}`}
-                  className="group"
-                >
-                  <div className="bg-white rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 flex flex-col h-full">
-                    <div className="h-40 bg-gradient-to-br from-indigo-50 to-purple-50 flex items-center justify-center overflow-hidden">
-                      {product.imageUrl ? (
-                        <img
-                          src={product.imageUrl}
-                          alt={product.name}
-                          className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300"
-                        />
-                      ) : (
-                        <div className="text-indigo-300 text-5xl">✨</div>
-                      )}
-                    </div>
-                    <div className="p-4">
-                      <h4 className="font-medium text-gray-900 group-hover:text-indigo-600 transition-colors">
-                        {product.name}
-                      </h4>
-                      <p className="text-indigo-600 font-bold mt-1">
-                        ₹ {(product.price / 100).toFixed(2)}
-                      </p>
-                      {product.vendor && (
-                        <p className="text-xs text-gray-500 mt-1">
-                          by {product.vendor.name}
+          {featuredProducts.length > 0 && (
+            <div className="mb-8">
+              <h3 className="text-lg font-semibold text-gray-800 mb-4">
+                Featured Products
+              </h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {featuredProducts.map((product) => (
+                  <Link
+                    to={`/product/${product.id}`}
+                    key={`featured-${product.id}`}
+                    className="group"
+                  >
+                    <div className="bg-white rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 flex flex-col h-full">
+                      <div className="h-40 bg-gradient-to-br from-indigo-50 to-purple-50 flex items-center justify-center overflow-hidden">
+                        {product.imageUrl ? (
+                          <img
+                            src={product.imageUrl}
+                            alt={product.name}
+                            className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300"
+                          />
+                        ) : (
+                          <div className="text-indigo-300 text-5xl">✨</div>
+                        )}
+                      </div>
+                      <div className="p-4">
+                        <h4 className="font-medium text-gray-900 group-hover:text-indigo-600 transition-colors">
+                          {product.name}
+                        </h4>
+                        <p className="text-indigo-600 font-bold mt-1">
+                          ₹ {(product.price / 100).toFixed(2)}
                         </p>
-                      )}
+                        {product.vendor && (
+                          <p className="text-xs text-gray-500 mt-1">
+                            by {product.vendor.name}
+                          </p>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                </Link>
-              ))}
+                  </Link>
+                ))}
+              </div>
             </div>
-          </div>
-
+          )}
 
           {/* Search Bar */}
           <div className="max-w-lg mx-auto">
@@ -256,7 +257,7 @@ export default function Marketplace() {
                       View Details
                     </Button>
                   </Link>
-                  
+
                   <Button
                     variant="default"
                     size="sm"
@@ -266,41 +267,58 @@ export default function Marketplace() {
                       const cart = JSON.parse(localStorage.getItem("cart") || "{}");
                       cart[product.id] = (cart[product.id] || 0) + 1;
                       localStorage.setItem("cart", JSON.stringify(cart));
-                      // Show a quick notification
+
+                      // Quick notification
                       const notification = document.createElement("div");
-                      notification.className = "fixed bottom-4 right-4 bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg z-50";
+                      notification.className =
+                        "fixed bottom-4 right-4 bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg z-50";
                       notification.textContent = `${product.name} added to cart!`;
                       document.body.appendChild(notification);
-                      setTimeout(() => {
-                        notification.remove();
-                      }, 2000);
+                      setTimeout(() => notification.remove(), 2000);
                     }}
                   >
                     Add to Cart
                   </Button>
-                  
-                  {/* Vendor Edit Button - Only show for vendor's own products */}
-                  {localStorage.getItem("token") && 
-                   localStorage.getItem("role") === "VENDOR" && 
-                   localStorage.getItem("userId") === product.vendorId && (
-                    <Link to={`/vendor/products?edit=${product.id}`} className="flex-1">
-                      <Button
-                        variant="default"
-                        size="sm"
-                        className="w-full bg-indigo-600 hover:bg-indigo-700"
+
+                  {/* Vendor Edit Button */}
+                  {localStorage.getItem("token") &&
+                    localStorage.getItem("role") === "VENDOR" &&
+                    localStorage.getItem("userId") === product.vendorId && (
+                      <Link
+                        to={`/vendor/products?edit=${product.id}`}
+                        className="flex-1"
                       >
-                        Edit Product
-                      </Button>
-                    </Link>
-                  )}
+                        <Button
+                          variant="default"
+                          size="sm"
+                          className="w-full bg-indigo-600 hover:bg-indigo-700"
+                        >
+                          Edit Product
+                        </Button>
+                      </Link>
+                    )}
                 </CardFooter>
               </Card>
             ))}
           </div>
         )}
-
-      
       </div>
+
+      {/* FadeIn animation */}
+      <style>
+        {`
+          @keyframes fadeInUp {
+            from {
+              opacity: 0;
+              transform: translateY(20px);
+            }
+            to {
+              opacity: 1;
+              transform: translateY(0);
+            }
+          }
+        `}
+      </style>
     </div>
   );
 }

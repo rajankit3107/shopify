@@ -1,10 +1,16 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import client, { setAuthToken } from "../api";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Package, DollarSign, Clock, CheckCircle, XCircle } from "lucide-react";
+import {
+  Package,
+  DollarSign,
+  Clock,
+  CheckCircle,
+  XCircle,
+} from "lucide-react";
 
 interface OrderItem {
   id: string;
@@ -95,6 +101,12 @@ export default function OrderManagement() {
     (order) => filter === "all" || order.status === filter
   );
 
+  const currency = new Intl.NumberFormat("en-IN", {
+    style: "currency",
+    currency: "INR",
+    minimumFractionDigits: 2,
+  });
+
   const totalEarnings = orders
     .filter((order) => order.status === "PAID")
     .reduce((sum, order) => sum + order.vendorAmount, 0);
@@ -117,7 +129,7 @@ export default function OrderManagement() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-8">
-      <div className="container mx-auto px-4">
+      <div className="max-w-7xl mx-auto px-4">
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-4xl font-bold mb-2 bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
@@ -126,103 +138,77 @@ export default function OrderManagement() {
           <p className="text-gray-600 text-lg">Track and manage your orders</p>
         </div>
 
-        {/* Stats Cards */}
+        {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
-            <CardContent className="p-6">
-              <div className="flex items-center">
-                <DollarSign className="h-8 w-8 text-green-600" />
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">
-                    Total Earnings
-                  </p>
-                  <p className="text-2xl font-bold text-gray-900">
-                    ₹{(totalEarnings / 100).toLocaleString()}
-                  </p>
-                </div>
+            <CardContent className="p-6 flex items-center">
+              <DollarSign className="h-8 w-8 text-green-600" />
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-600">
+                  Total Earnings
+                </p>
+                <p className="text-2xl font-bold text-gray-900">
+                  {currency.format(totalEarnings / 100)}
+                </p>
               </div>
             </CardContent>
           </Card>
-
           <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
-            <CardContent className="p-6">
-              <div className="flex items-center">
-                <Package className="h-8 w-8 text-indigo-600" />
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">
-                    Total Orders
-                  </p>
-                  <p className="text-2xl font-bold text-gray-900">
-                    {orders.length}
-                  </p>
-                </div>
+            <CardContent className="p-6 flex items-center">
+              <Package className="h-8 w-8 text-indigo-600" />
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-600">Total Orders</p>
+                <p className="text-2xl font-bold text-gray-900">
+                  {orders.length}
+                </p>
               </div>
             </CardContent>
           </Card>
-
           <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
-            <CardContent className="p-6">
-              <div className="flex items-center">
-                <Clock className="h-8 w-8 text-yellow-600" />
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">
-                    Pending Orders
-                  </p>
-                  <p className="text-2xl font-bold text-gray-900">
-                    {pendingOrders}
-                  </p>
-                </div>
+            <CardContent className="p-6 flex items-center">
+              <Clock className="h-8 w-8 text-yellow-600" />
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-600">
+                  Pending Orders
+                </p>
+                <p className="text-2xl font-bold text-gray-900">
+                  {pendingOrders}
+                </p>
               </div>
             </CardContent>
           </Card>
-
           <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
-            <CardContent className="p-6">
-              <div className="flex items-center">
-                <CheckCircle className="h-8 w-8 text-green-600" />
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">
-                    Completed Orders
-                  </p>
-                  <p className="text-2xl font-bold text-gray-900">
-                    {paidOrders}
-                  </p>
-                </div>
+            <CardContent className="p-6 flex items-center">
+              <CheckCircle className="h-8 w-8 text-green-600" />
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-600">
+                  Completed Orders
+                </p>
+                <p className="text-2xl font-bold text-gray-900">{paidOrders}</p>
               </div>
             </CardContent>
           </Card>
         </div>
 
-        {/* Filter Buttons */}
-        <div className="flex gap-2 mb-6">
-          <Button
-            variant={filter === "all" ? "default" : "outline"}
-            onClick={() => setFilter("all")}
-            className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700"
-          >
-            All Orders
-          </Button>
-          <Button
-            variant={filter === "PENDING" ? "default" : "outline"}
-            onClick={() => setFilter("PENDING")}
-          >
-            Pending
-          </Button>
-          <Button
-            variant={filter === "PAID" ? "default" : "outline"}
-            onClick={() => setFilter("PAID")}
-          >
-            Paid
-          </Button>
-          <Button
-            variant={filter === "CANCELLED" ? "default" : "outline"}
-            onClick={() => setFilter("CANCELLED")}
-          >
-            Cancelled
-          </Button>
+        {/* Filters */}
+        <div className="flex gap-2 mb-6 flex-wrap">
+          {(["all", "PENDING", "PAID", "CANCELLED"] as const).map((f) => (
+            <Button
+              key={f}
+              variant={filter === f ? "default" : "outline"}
+              onClick={() => setFilter(f)}
+              className={
+                filter === f
+                  ? "bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700"
+                  : ""
+              }
+            >
+              {f === "all" ? "All Orders" : f}
+            </Button>
+          ))}
         </div>
 
-        {/* Orders List */}
+        {/* Orders */}
         <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-xl">
           <CardHeader>
             <CardTitle className="text-xl font-bold text-gray-900">
@@ -244,18 +230,27 @@ export default function OrderManagement() {
                     ? "No orders yet"
                     : `No ${filter.toLowerCase()} orders`}
                 </h3>
-                <p className="text-gray-600">
+                <p className="text-gray-600 mb-6">
                   {filter === "all"
                     ? "Your orders will appear here once customers start buying your products."
                     : `No orders with ${filter.toLowerCase()} status found.`}
                 </p>
+                <Link to="/vendor/products">
+                  <Button className="bg-indigo-600 hover:bg-indigo-700">
+                    Go to Products
+                  </Button>
+                </Link>
               </div>
             ) : (
               <div className="divide-y">
-                {filteredOrders.map((order) => (
+                {filteredOrders.map((order, idx) => (
                   <div
                     key={order.id}
-                    className="p-6 hover:bg-gray-50 transition-colors"
+                    className="p-6 hover:bg-gray-50 transition-all duration-300"
+                    style={{
+                      animation: "fadeInUp 0.4s ease-out forwards",
+                      animationDelay: `${idx * 100}ms`,
+                    }}
                   >
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
@@ -263,7 +258,11 @@ export default function OrderManagement() {
                           <h3 className="text-lg font-semibold text-gray-900">
                             Order #{order.id.slice(-8)}
                           </h3>
-                          <Badge className={getStatusColor(order.status)}>
+                          <Badge
+                            className={`rounded-full px-3 py-1 ${getStatusColor(
+                              order.status
+                            )}`}
+                          >
                             <span className="flex items-center gap-1">
                               {getStatusIcon(order.status)}
                               {order.status}
@@ -271,6 +270,7 @@ export default function OrderManagement() {
                           </Badge>
                         </div>
 
+                        {/* Order Details */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                           <div>
                             <p className="text-sm text-gray-600 mb-1">
@@ -293,7 +293,7 @@ export default function OrderManagement() {
                               Total Amount
                             </p>
                             <p className="font-medium text-gray-900">
-                              ₹{(order.totalAmount / 100).toLocaleString()}
+                              {currency.format(order.totalAmount / 100)}
                             </p>
                           </div>
                           <div>
@@ -301,11 +301,12 @@ export default function OrderManagement() {
                               Your Earnings
                             </p>
                             <p className="font-medium text-green-600">
-                              ₹{(order.vendorAmount / 100).toLocaleString()}
+                              {currency.format(order.vendorAmount / 100)}
                             </p>
                           </div>
                         </div>
 
+                        {/* Items */}
                         <div className="mb-4">
                           <p className="text-sm text-gray-600 mb-2">
                             Order Items
@@ -325,13 +326,14 @@ export default function OrderManagement() {
                                   </p>
                                 </div>
                                 <p className="font-medium text-gray-900">
-                                  ₹{(item.price / 100).toLocaleString()}
+                                  {currency.format(item.price / 100)}
                                 </p>
                               </div>
                             ))}
                           </div>
                         </div>
 
+                        {/* Razorpay Info */}
                         {order.razorpayOrderId && (
                           <div className="text-sm text-gray-500">
                             <p>Razorpay Order ID: {order.razorpayOrderId}</p>
@@ -349,6 +351,16 @@ export default function OrderManagement() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Animation */}
+      <style>
+        {`
+          @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+          }
+        `}
+      </style>
     </div>
   );
 }

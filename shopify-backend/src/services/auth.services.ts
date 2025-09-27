@@ -33,7 +33,7 @@ export async function login(email: string, password: string) {
     where: { email },
   });
 
-  //   console.log("user", user);
+  
 
   if (!user) throw ApiError.badRequest(`Invalid credentials`);
 

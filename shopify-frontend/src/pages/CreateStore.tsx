@@ -78,20 +78,19 @@ export default function CreateStore() {
 
   if (success) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50 via-white to-emerald-50 py-12 px-4 sm:px-6 lg:px-8">
-        <Card className="w-full max-w-md bg-white/80 backdrop-blur-sm border-0 shadow-2xl">
-          <CardContent className="pt-6 text-center">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50 via-white to-emerald-50 px-4">
+        <Card className="w-full max-w-md bg-white/90 backdrop-blur-lg border border-green-100 shadow-lg">
+          <CardContent className="py-10 text-center">
             <div className="text-green-600 text-6xl mb-4">✅</div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">
-              Store Created!
+            <h2 className="text-2xl font-semibold text-gray-900">
+              Store Created Successfully
             </h2>
-            <p className="text-gray-600 mb-4">
-              Your store has been created successfully. Redirecting to
-              dashboard...
+            <p className="text-gray-600 mt-2 mb-6 text-sm">
+              Redirecting you to your dashboard...
             </p>
             <Button
               onClick={() => navigate("/vendor/dashboard")}
-              className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
+              className="bg-green-600 hover:bg-green-700 text-white w-full"
             >
               Go to Dashboard
             </Button>
@@ -102,27 +101,29 @@ export default function CreateStore() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-50 via-white to-purple-50 py-12 px-4 sm:px-6 lg:px-8">
-      <Card className="w-full max-w-md bg-white/80 backdrop-blur-sm border-0 shadow-2xl">
-        <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-bold text-gray-900">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-50 via-white to-purple-50 px-4">
+      <Card className="w-full max-w-lg bg-white/90 backdrop-blur-lg border border-gray-100 shadow-lg">
+        <CardHeader className="text-center pb-4">
+          <CardTitle className="text-2xl font-semibold text-gray-900">
             Create Your Store
           </CardTitle>
-          <p className="text-sm text-gray-600 mt-2">
-            Set up your store and start selling your products
+          <p className="text-sm text-gray-500 mt-1">
+            Set up your store and start selling
           </p>
         </CardHeader>
-        <form onSubmit={handleSubmit}>
-          <CardContent className="space-y-4">
+
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <CardContent className="space-y-5">
             {error && (
-              <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-md text-sm">
+              <div className="bg-red-50 border border-red-200 text-red-600 px-3 py-2 rounded-md text-sm">
                 {error}
               </div>
             )}
-            <div>
+
+            <div className="space-y-1">
               <label
                 htmlFor="name"
-                className="block text-sm font-medium text-gray-700 mb-1"
+                className="block text-sm font-medium text-gray-700"
               >
                 Store Name *
               </label>
@@ -131,18 +132,18 @@ export default function CreateStore() {
                 required
                 value={formData.name}
                 onChange={(e) => handleNameChange(e.target.value)}
-                placeholder="Enter your store name"
-                className="w-full"
+                placeholder="My Awesome Shop"
               />
             </div>
-            <div>
+
+            <div className="space-y-1">
               <label
                 htmlFor="slug"
-                className="block text-sm font-medium text-gray-700 mb-1"
+                className="block text-sm font-medium text-gray-700"
               >
                 Store URL *
               </label>
-              <div className="flex">
+              <div className="flex rounded-md shadow-sm">
                 <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500 text-sm">
                   shopifyy.com/store/
                 </span>
@@ -155,14 +156,15 @@ export default function CreateStore() {
                   className="rounded-l-none"
                 />
               </div>
-              <p className="text-xs text-gray-500 mt-1">
+              <p className="text-xs text-gray-500">
                 This will be your store's unique URL
               </p>
             </div>
-            <div>
+
+            <div className="space-y-1">
               <label
                 htmlFor="description"
-                className="block text-sm font-medium text-gray-700 mb-1"
+                className="block text-sm font-medium text-gray-700"
               >
                 Description
               </label>
@@ -172,15 +174,16 @@ export default function CreateStore() {
                 onChange={(e) =>
                   handleInputChange("description", e.target.value)
                 }
-                placeholder="Describe your store and what you sell"
+                placeholder="Briefly describe your store"
                 className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 resize-none"
                 rows={3}
               />
             </div>
-            <div>
+
+            <div className="space-y-1">
               <label
                 htmlFor="logoUrl"
-                className="block text-sm font-medium text-gray-700 mb-1"
+                className="block text-sm font-medium text-gray-700"
               >
                 Logo URL (optional)
               </label>
@@ -190,17 +193,17 @@ export default function CreateStore() {
                 value={formData.logoUrl}
                 onChange={(e) => handleInputChange("logoUrl", e.target.value)}
                 placeholder="https://example.com/logo.png"
-                className="w-full"
               />
             </div>
           </CardContent>
-          <CardFooter className="flex flex-col space-y-4">
+
+          <CardFooter className="flex flex-col gap-3 pt-0">
             <Button
               type="submit"
-              className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 transition-all duration-200 shadow-lg hover:shadow-xl"
               disabled={loading}
+              className="w-full bg-indigo-600 hover:bg-indigo-700 transition"
             >
-              {loading ? "Creating Store..." : "Create Store"}
+              {loading ? "Creating..." : "Create Store"}
             </Button>
             <Button
               type="button"
