@@ -166,7 +166,7 @@ export default function Checkout() {
       script.src = "https://checkout.razorpay.com/v1/checkout.js";
       script.onload = () => {
         const options = {
-          key: razorpay.key_id || (import.meta.env.VITE_RAZORPAY_KEY_ID ?? ""),
+          key: razorpay.key_id,
           amount: razorpay.amount,
           currency: razorpay.currency,
           order_id: razorpay.id,
@@ -180,7 +180,7 @@ export default function Checkout() {
           handler: async (response: paymentProps) => {
             try {
               await client.post("/payments/callback", {
-                orderId: order.id,
+                receipt: order.id,
                 razorpay_order_id: response.razorpay_order_id,
                 razorpay_payment_id: response.razorpay_payment_id,
                 razorpay_signature: response.razorpay_signature,
@@ -188,7 +188,8 @@ export default function Checkout() {
               localStorage.removeItem("cart");
               alert("Payment successful! Your order has been placed.");
               navigate("/");
-            } catch {
+            } catch (error) {
+              console.error("Payment verification error:", error);
               alert("Payment verification failed. Please contact support.");
             }
           },

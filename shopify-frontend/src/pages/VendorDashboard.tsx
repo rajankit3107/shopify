@@ -16,32 +16,62 @@ export interface OrderProps {
   updatedAt: string;
 }
 
+interface Vendor {
+  id: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  logoUrl: string | null;
+  payoutBalance: number;
+  createdAt: string;
+}
+
 export default function VendorDashboard() {
   const [orders, setOrders] = useState<OrderProps[]>([]);
+  const [vendor, setVendor] = useState<Vendor | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   useEffect(() => {
-    const fetchOrders = async () => {
+    const fetchData = async () => {
       try {
         setLoading(true);
         const token = localStorage.getItem("token");
         if (token) {
           client.defaults.headers.common["Authorization"] = `Bearer ${token}`;
         }
+
+        // Fetch vendor info first
+        try {
+          const vendorResponse = await client.get("/vendors/me");
+          setVendor(vendorResponse.data);
+        } catch (vendorErr: unknown) {
+          const vendorError = (
+            vendorErr as {
+              response?: { data?: { message?: string }; status?: number };
+            }
+          )?.response;
+          if (vendorError?.status === 404) {
+            setError("Please create a store first to access your dashboard.");
+            return;
+          }
+          throw vendorErr;
+        }
+
+        // Fetch orders
         const response = await client.get("/orders/vendor/me");
         setOrders(response.data);
       } catch (err: unknown) {
         setError(
           (err as { response?: { data?: { message?: string } } })?.response
-            ?.data?.message || "Failed to fetch orders"
+            ?.data?.message || "Failed to fetch data"
         );
       } finally {
         setLoading(false);
       }
     };
 
-    fetchOrders();
+    fetchData();
   }, []);
 
   const getStatusColor = (status: string) => {
@@ -68,15 +98,51 @@ export default function VendorDashboard() {
     );
   }
 
+  // Show store creation prompt if vendor not found
+  if (error && error.includes("create a store first")) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 py-8">
+        <div className="container mx-auto px-4">
+          <div className="text-center">
+            <div className="text-gray-400 text-8xl mb-6">🏪</div>
+            <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+              Welcome to Your Vendor Dashboard
+            </h1>
+            <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
+              To get started, you need to create your store. This will allow you
+              to add products, manage orders, and track your sales.
+            </p>
+            <div className="space-y-4">
+              <Link to="/vendor/create">
+                <Button className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 px-8 py-4 text-lg">
+                  Create Your Store
+                </Button>
+              </Link>
+              <div>
+                <Link to="/">
+                  <Button variant="outline" className="px-6 py-3">
+                    Browse Marketplace
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-8">
       <div className="container mx-auto px-4">
         <div className="mb-12 text-center">
           <h1 className="text-5xl font-bold mb-4 bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-            Vendor Dashboard
+            {vendor ? `${vendor.name} Dashboard` : "Vendor Dashboard"}
           </h1>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto mb-8">
-            Manage your orders, track sales, and grow your business
+            {vendor
+              ? `Welcome back! Manage your orders, track sales, and grow your business.`
+              : "Manage your orders, track sales, and grow your business"}
           </p>
 
           {/* Quick Actions */}
@@ -107,6 +173,45 @@ export default function VendorDashboard() {
         {error && (
           <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-md mb-6">
             {error}
+          </div>
+        )}
+
+        {/* Store Info */}
+        {vendor && (
+          <div className="mb-8">
+            <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
+              <CardContent className="p-6">
+                <div className="flex items-center gap-4">
+                  <div className="w-16 h-16 bg-white rounded-lg shadow-sm flex items-center justify-center flex-shrink-0">
+                    {vendor.logoUrl ? (
+                      <img
+                        src={vendor.logoUrl}
+                        alt={vendor.name}
+                        className="w-full h-full object-cover rounded-lg"
+                      />
+                    ) : (
+                      <div className="text-gray-400 text-2xl">🏪</div>
+                    )}
+                  </div>
+                  <div className="flex-1">
+                    <h2 className="text-2xl font-bold text-gray-900 mb-1">
+                      {vendor.name}
+                    </h2>
+                    {vendor.description && (
+                      <p className="text-gray-600 mb-2">{vendor.description}</p>
+                    )}
+                    <div className="flex items-center gap-4 text-sm text-gray-500">
+                      <span>Store URL: shopifyy.com/store/{vendor.slug}</span>
+                      <span>•</span>
+                      <span>
+                        Payout Balance: ₹
+                        {(vendor.payoutBalance / 100).toLocaleString()}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </div>
         )}
 

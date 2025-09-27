@@ -13,7 +13,6 @@ import Stores from "./pages/Stores";
 import CreateStore from "./pages/CreateStore";
 import ProductManagement from "./pages/ProductManagement";
 import OrderManagement from "./pages/OrderManagement";
-import VendorAnalytics from "./pages/VendorAnalytics";
 import { useState, useEffect } from "react";
 
 function App() {
@@ -23,7 +22,7 @@ function App() {
 
   useEffect(() => {
     const token = localStorage.getItem("token");
-    const role = localStorage.getItem("userRole");
+    const role = localStorage.getItem("role");
     if (token) {
       setIsAuthenticated(true);
       setUserRole(role);
@@ -101,16 +100,6 @@ function App() {
             element={
               isAuthenticated && userRole === "VENDOR" ? (
                 <OrderManagement />
-              ) : (
-                <Navigate to="/" replace />
-              )
-            }
-          />
-          <Route
-            path="/vendor/analytics"
-            element={
-              isAuthenticated && userRole === "VENDOR" ? (
-                <VendorAnalytics />
               ) : (
                 <Navigate to="/" replace />
               )

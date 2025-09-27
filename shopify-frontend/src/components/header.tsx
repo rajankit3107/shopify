@@ -11,20 +11,27 @@ export default function Header() {
 
   useEffect(() => {
     const token = localStorage.getItem("token");
-    const role = localStorage.getItem("userRole");
+    const role = localStorage.getItem("role");
     if (token) {
       setIsAuthenticated(true);
       setUserRole(role);
       setAuthToken(token);
     }
-  }, []);
+  }, [location]); // Re-check authentication on location change
 
   const handleLogout = () => {
+    // Clear all authentication-related items from localStorage
     localStorage.removeItem("token");
+    localStorage.removeItem("role");
     localStorage.removeItem("userRole");
+    localStorage.removeItem("userId");
+    
+    // Reset authentication state
     setIsAuthenticated(false);
     setUserRole(null);
     setAuthToken("");
+    
+    // Redirect to home page
     navigate("/");
   };
 
@@ -36,10 +43,10 @@ export default function Header() {
 
   if (userRole === "VENDOR") {
     navLinks.push({ name: "Dashboard", path: "/vendor/dashboard" });
+    navLinks.push({ name: "Create Store", path: "/vendor/create" });
     navLinks.push({ name: "Products", path: "/vendor/products" });
     navLinks.push({ name: "Orders", path: "/vendor/orders" });
     navLinks.push({ name: "Analytics", path: "/vendor/analytics" });
-    navLinks.push({ name: "Create Store", path: "/vendor/create" });
   }
 
   return (
@@ -49,7 +56,7 @@ export default function Header() {
           to="/"
           className="text-2xl font-bold text-indigo-600 hover:text-indigo-700 transition-colors"
         >
-          Shopifyy
+          Shopify
         </Link>
 
         <nav className="hidden md:flex items-center gap-6 text-gray-600">
@@ -81,6 +88,7 @@ export default function Header() {
                   {userRole?.toLowerCase()}
                 </span>
               </div>
+
               <Button
                 onClick={handleLogout}
                 variant="outline"

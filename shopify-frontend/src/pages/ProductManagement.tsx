@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import client, { setAuthToken } from "../api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -68,7 +68,7 @@ export default function ProductManagement() {
       setError("");
 
       // Fetch vendor info
-      const vendorResponse = await client.get("/vendors/me");
+      const vendorResponse = await client.get("/vendor/me");
       setVendor(vendorResponse.data);
 
       // Fetch products
@@ -76,10 +76,20 @@ export default function ProductManagement() {
       setProducts(productsResponse.data);
     } catch (err: unknown) {
       console.error("Error fetching data:", err);
-      setError(
-        (err as { response?: { data?: { message?: string } } })?.response?.data
-          ?.message || "Failed to load data"
-      );
+      const errorMessage = (
+        err as { response?: { data?: { message?: string }; status?: number } }
+      )?.response?.data?.message;
+      const status = (
+        err as { response?: { data?: { message?: string }; status?: number } }
+      )?.response?.status;
+
+      if (status === 404 && errorMessage?.includes("Vendor not found")) {
+        setError(
+          "Please create a store first before managing products. Click 'Create Store' to get started."
+        );
+      } else {
+        setError(errorMessage || "Failed to load data");
+      }
     } finally {
       setLoading(false);
     }
@@ -182,6 +192,41 @@ export default function ProductManagement() {
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto mb-4"></div>
           <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state if vendor not found
+  if (error && error.includes("create a store first")) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 py-8">
+        <div className="container mx-auto px-4">
+          <div className="text-center">
+            <div className="text-gray-400 text-8xl mb-6">🏪</div>
+            <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+              Store Required
+            </h1>
+            <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
+              You need to create a store before you can manage products. This
+              helps us organize your products and provide a better shopping
+              experience for customers.
+            </p>
+            <div className="space-y-4">
+              <Link to="/vendor/create">
+                <Button className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 px-8 py-4 text-lg">
+                  Create Your Store
+                </Button>
+              </Link>
+              <div>
+                <Link to="/vendor/dashboard">
+                  <Button variant="outline" className="px-6 py-3">
+                    Back to Dashboard
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     );
