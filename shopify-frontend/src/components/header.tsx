@@ -1,4 +1,4 @@
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { Button } from "./ui/button";
 import { useState, useEffect } from "react";
 import { setAuthToken } from "../api";
@@ -6,7 +6,7 @@ import { Menu } from "lucide-react";
 
 export default function Header() {
   const location = useLocation();
-  const navigate = useNavigate();
+ 
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [userRole, setUserRole] = useState<string | null>(null);
 
@@ -23,7 +23,7 @@ export default function Header() {
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("role");
-    localStorage.removeItem("userId");
+    localStorage.removeItem("id");
     setIsAuthenticated(false);
     setUserRole(null);
     setAuthToken("");

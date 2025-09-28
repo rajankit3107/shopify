@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import client, { setAuthToken } from "../api";
-import { useNavigate, Link } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -16,7 +16,7 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const nav = useNavigate();
+  
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
