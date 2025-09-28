@@ -39,10 +39,12 @@ export default function ProductPage() {
   const addToCart = () => {
     if (!product) return;
 
-    const cartData = JSON.parse(localStorage.getItem("cart") || "{}");
+    const userId = localStorage.getItem("userId");
+    const cartKey = userId ? `cart_${userId}` : "cart";
+    const cartData = JSON.parse(localStorage.getItem(cartKey) || "{}");
     const currentQuantity = cartData[product.id] || 0;
     cartData[product.id] = currentQuantity + quantity;
-    localStorage.setItem("cart", JSON.stringify(cartData));
+    localStorage.setItem(cartKey, JSON.stringify(cartData));
 
     setAddedToCart(true);
     setTimeout(() => setAddedToCart(false), 2000);

@@ -264,9 +264,11 @@ export default function Marketplace() {
                     className="flex-1 bg-indigo-600 hover:bg-indigo-700"
                     onClick={(e) => {
                       e.preventDefault();
-                      const cart = JSON.parse(localStorage.getItem("cart") || "{}");
+                      const userId = localStorage.getItem("userId");
+                      const cartKey = userId ? `cart_${userId}` : "cart";
+                      const cart = JSON.parse(localStorage.getItem(cartKey) || "{}");
                       cart[product.id] = (cart[product.id] || 0) + 1;
-                      localStorage.setItem("cart", JSON.stringify(cart));
+                      localStorage.setItem(cartKey, JSON.stringify(cart));
 
                       // Quick notification
                       const notification = document.createElement("div");

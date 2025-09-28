@@ -63,7 +63,9 @@ export default function Checkout() {
   const loadCartItems = useCallback(async () => {
     try {
       setLoading(true);
-      const cartData = JSON.parse(localStorage.getItem("cart") || "{}");
+      const userId = localStorage.getItem("userId");
+      const cartKey = userId ? `cart_${userId}` : "cart";
+      const cartData = JSON.parse(localStorage.getItem(cartKey) || "{}");
       const productIds = Object.keys(cartData);
 
       if (productIds.length === 0) {
@@ -136,7 +138,9 @@ export default function Checkout() {
       setProcessing(true);
       setError("");
 
-      const cartData = JSON.parse(localStorage.getItem("cart") || "{}");
+      const userId = localStorage.getItem("userId");
+      const cartKey = userId ? `cart_${userId}` : "cart";
+      const cartData = JSON.parse(localStorage.getItem(cartKey) || "{}");
       const productIds = Object.keys(cartData);
 
       if (productIds.length === 0) {
@@ -185,7 +189,10 @@ export default function Checkout() {
                 razorpay_payment_id: response.razorpay_payment_id,
                 razorpay_signature: response.razorpay_signature,
               });
-              localStorage.removeItem("cart");
+              // Clear user-specific cart
+              const userId = localStorage.getItem("userId");
+              const cartKey = userId ? `cart_${userId}` : "cart";
+              localStorage.removeItem(cartKey);
               alert("Payment successful! Your order has been placed.");
               navigate("/");
             } catch (error) {

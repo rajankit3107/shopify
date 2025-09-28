@@ -1,4 +1,4 @@
-import { Route, Routes, Navigate, useLocation } from "react-router-dom";
+import { Route, Routes, Navigate } from "react-router-dom";
 import "./App.css";
 import Header from "./components/header";
 import Marketplace from "./pages/Marketplace";
@@ -13,13 +13,13 @@ import Stores from "./pages/Stores";
 import CreateStore from "./pages/CreateStore";
 import ProductManagement from "./pages/ProductManagement";
 import OrderManagement from "./pages/OrderManagement";
+import LandingPage from "./pages/LandingPage";
 import { useState, useEffect } from "react";
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [userRole, setUserRole] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-  const location = useLocation();
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -27,12 +27,9 @@ function App() {
     if (token) {
       setIsAuthenticated(true);
       setUserRole(role);
-    } else {
-      setIsAuthenticated(false);
-      setUserRole(null);
     }
     setLoading(false);
-  }, [location]); // Re-check on location change
+  }, []);
 
   if (loading) {
     return (
@@ -48,10 +45,11 @@ function App() {
   return (
     <>
       <Header />
-      <main className="container mx-auto px-4">
+      <main className={isAuthenticated ? "container mx-auto px-4" : ""}>
         <Routes>
-          <Route path="/" element={<Marketplace />} />
-          <Route path="/stores" element={<Stores />} />
+          <Route path="/" element={isAuthenticated ? <Marketplace /> : <LandingPage />} />
+          <Route path="/marketplace" element={isAuthenticated ? <Marketplace /> : <Navigate to="/" replace />} />
+          <Route path="/stores" element={isAuthenticated ? <Stores /> : <Navigate to="/" replace />} />
           <Route
             path="/login"
             element={isAuthenticated ? <Navigate to="/" replace /> : <Login />}
@@ -60,15 +58,13 @@ function App() {
             path="/signup"
             element={isAuthenticated ? <Navigate to="/" replace /> : <Signup />}
           />
-          <Route path="/cart" element={<Cart />} />
+          <Route path="/cart" element={isAuthenticated ? <Cart /> : <Navigate to="/" replace />} />
           <Route
             path="/checkout"
-            element={
-              isAuthenticated ? <Checkout /> : <Navigate to="/login" replace />
-            }
+            element={isAuthenticated ? <Checkout /> : <Navigate to="/" replace />}
           />
-          <Route path="/product/:id" element={<ProductPage />} />
-          <Route path="/store/:slug" element={<Storefront />} />
+          <Route path="/product/:id" element={isAuthenticated ? <ProductPage /> : <Navigate to="/" replace />} />
+          <Route path="/store/:slug" element={isAuthenticated ? <Storefront /> : <Navigate to="/" replace />} />
           <Route
             path="/vendor/dashboard"
             element={

@@ -20,7 +20,9 @@ export default function Cart() {
     const fetchCartItems = async () => {
       try {
         setLoading(true);
-        const cartData = JSON.parse(localStorage.getItem("cart") || "{}");
+        const userId = localStorage.getItem("userId");
+        const cartKey = userId ? `cart_${userId}` : "cart";
+        const cartData = JSON.parse(localStorage.getItem(cartKey) || "{}");
         const productIds = Object.keys(cartData);
 
         if (productIds.length === 0) {
@@ -60,20 +62,24 @@ export default function Cart() {
     );
     setItems(updatedItems);
 
-    // Update localStorage
-    const cartData = { ...JSON.parse(localStorage.getItem("cart") || "{}") };
+    // Update localStorage with user-specific cart
+    const userId = localStorage.getItem("userId");
+    const cartKey = userId ? `cart_${userId}` : "cart";
+    const cartData = { ...JSON.parse(localStorage.getItem(cartKey) || "{}") };
     cartData[productId] = newQuantity;
-    localStorage.setItem("cart", JSON.stringify(cartData));
+    localStorage.setItem(cartKey, JSON.stringify(cartData));
   };
 
   const removeItem = (productId: string) => {
     const updatedItems = items.filter((item) => item.id !== productId);
     setItems(updatedItems);
 
-    // Update localStorage
-    const cartData = { ...JSON.parse(localStorage.getItem("cart") || "{}") };
+    // Update localStorage with user-specific cart
+    const userId = localStorage.getItem("userId");
+    const cartKey = userId ? `cart_${userId}` : "cart";
+    const cartData = { ...JSON.parse(localStorage.getItem(cartKey) || "{}") };
     delete cartData[productId];
-    localStorage.setItem("cart", JSON.stringify(cartData));
+    localStorage.setItem(cartKey, JSON.stringify(cartData));
   };
 
   const getTotalPrice = () => {

@@ -29,7 +29,7 @@ export default function Login() {
       localStorage.setItem("role", res.data.user.role);
       localStorage.setItem("userId", res.data.user.id);
       setAuthToken(res.data.token);
-      nav("/");
+      window.location.href = "/";
     } catch (err: unknown) {
       setError(
         (err as { response?: { data?: { message?: string } } })?.response?.data

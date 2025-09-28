@@ -27,7 +27,7 @@ export default function Header() {
     setIsAuthenticated(false);
     setUserRole(null);
     setAuthToken("");
-    navigate("/");
+    window.location.href = "/";
   };
 
   const navLinks = [
@@ -41,39 +41,43 @@ export default function Header() {
       { name: "Dashboard", path: "/vendor/dashboard" },
       { name: "Create Store", path: "/vendor/create" },
       { name: "Products", path: "/vendor/products" },
-      { name: "Orders", path: "/vendor/orders" },
+      { name: "Orders", path: "/vendor/orders" }
     );
   }
 
   return (
-    <header className="sticky top-0 z-50 border-b bg-white/90 backdrop-blur-sm shadow-sm">
-      <div className="container mx-auto flex items-center justify-between px-6 py-3">
-        {/* Logo */}
-        <Link
-          to="/"
-          className="text-2xl font-extrabold text-indigo-600 tracking-tight hover:text-indigo-700 transition-colors"
-        >
-          Shopify
-        </Link>
+    <header className="sticky top-0 z-50 border-b bg-white/90 backdrop-blur-sm shadow-sm w-full">
+      <div className="w-full max-w-none px-4 sm:px-6 lg:px-8 flex items-center justify-between py-3">
+        {/* Left Section - Logo */}
+        <div className="flex items-center">
+          <Link
+            to="/"
+            className="text-2xl font-extrabold text-indigo-600 tracking-tight hover:text-indigo-700 transition-colors"
+          >
+            Shopify
+          </Link>
+        </div>
 
-        {/* Desktop Nav */}
-        <nav className="hidden md:flex items-center gap-4">
-          {navLinks.map((link) => (
-            <Link key={link.name} to={link.path}>
-              <span
-                className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
-                  location.pathname === link.path
-                    ? "bg-indigo-100 text-indigo-700"
-                    : "text-gray-600 hover:text-indigo-600 hover:bg-gray-100"
-                }`}
-              >
-                {link.name}
-              </span>
-            </Link>
-          ))}
+        {/* Center Section - Desktop Nav */}
+        <nav className="hidden md:flex items-center justify-center flex-1 mx-8">
+          <div className="flex items-center gap-6">
+            {navLinks.map((link) => (
+              <Link key={link.name} to={link.path}>
+                <span
+                  className={`px-4 py-2 rounded-full text-sm font-medium transition-colors whitespace-nowrap ${
+                    location.pathname === link.path
+                      ? "bg-indigo-100 text-indigo-700"
+                      : "text-gray-600 hover:text-indigo-600 hover:bg-gray-100"
+                  }`}
+                >
+                  {link.name}
+                </span>
+              </Link>
+            ))}
+          </div>
         </nav>
 
-        {/* Auth Section */}
+        {/* Right Section - Auth */}
         <div className="flex items-center gap-3">
           {isAuthenticated ? (
             <div className="flex items-center gap-3">
@@ -96,7 +100,7 @@ export default function Header() {
               </Button>
             </div>
           ) : (
-            <>
+            <div className="flex items-center gap-2">
               <Link to="/login">
                 <Button variant="outline" size="sm" className="cursor-pointer">
                   Login
@@ -107,14 +111,14 @@ export default function Header() {
                   Sign Up
                 </Button>
               </Link>
-            </>
+            </div>
           )}
-        </div>
 
-        {/* Mobile Menu Icon */}
-        <button className="md:hidden p-2 rounded-lg hover:bg-gray-100">
-          <Menu className="w-6 h-6 text-gray-600" />
-        </button>
+          {/* Mobile Menu Icon */}
+          <button className="md:hidden p-2 rounded-lg hover:bg-gray-100 ml-2">
+            <Menu className="w-6 h-6 text-gray-600" />
+          </button>
+        </div>
       </div>
     </header>
   );
