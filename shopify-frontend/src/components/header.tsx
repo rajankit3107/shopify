@@ -76,7 +76,7 @@ export default function Header() {
             ))}
           </div>
         </nav>
-
+            
         {/* Right Section - Auth */}
         <div className="flex items-center gap-3">
           {isAuthenticated ? (
