@@ -39,7 +39,7 @@ export default function ProductPage() {
   const addToCart = () => {
     if (!product) return;
 
-    const userId = localStorage.getItem("id");
+    const userId = localStorage.getItem("userId");
     console.log((userId))
     const cartKey = userId ? `cart_${userId}` : "cart";
     const cartData = JSON.parse(localStorage.getItem(cartKey) || "{}");
