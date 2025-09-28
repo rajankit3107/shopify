@@ -1,7 +1,9 @@
 import axios from "axios";
 
 const API_BASE_URL =
-  import.meta.env.VITE_API_BASE;
+  import.meta.env.VITE_API_BASE ?? "https://shopify-0hdx.onrender.com/api";
+
+  console.log(API_BASE_URL)
 
 const client = axios.create({ baseURL: API_BASE_URL });
 

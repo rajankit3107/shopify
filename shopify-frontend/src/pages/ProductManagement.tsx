@@ -69,10 +69,10 @@ export default function ProductManagement() {
       setLoading(true);
       setError("");
 
-      const vendorResponse = await client.get("/vendor/me");
+      const vendorResponse = await client.get("/vendors/me");
       setVendor(vendorResponse.data);
 
-      const productsResponse = await client.get("/products/vendor");
+      const productsResponse = await client.get("/product/vendor");
       setProducts(productsResponse.data);
     } catch (err: unknown) {
       console.error("Error fetching data:", err);
@@ -124,9 +124,9 @@ export default function ProductManagement() {
       };
 
       if (editingProduct) {
-        await client.put(`/products/${editingProduct.id}`, productData);
+        await client.put(`/product/${editingProduct.id}`, productData);
       } else {
-        await client.post("/products", productData);
+        await client.post("/product", productData);
       }
 
       await fetchData();
@@ -159,7 +159,7 @@ export default function ProductManagement() {
 
     try {
       setSaving(true);
-      await client.delete(`/products/${productId}`);
+      await client.delete(`/product/${productId}`);
       await fetchData();
     } catch (err: unknown) {
       console.error("Error deleting product:", err);
