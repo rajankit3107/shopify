@@ -63,7 +63,7 @@ export default function Checkout() {
   const loadCartItems = useCallback(async () => {
     try {
       setLoading(true);
-      const userId = localStorage.getItem("id");
+      const userId = localStorage.getItem("userId");
       const cartKey = userId ? `cart_${userId}` : "cart";
       const cartData = JSON.parse(localStorage.getItem(cartKey) || "{}");
       const productIds = Object.keys(cartData);
@@ -138,7 +138,7 @@ export default function Checkout() {
       setProcessing(true);
       setError("");
 
-      const userId = localStorage.getItem("id");
+      const userId = localStorage.getItem("userId");
       const cartKey = userId ? `cart_${userId}` : "cart";
       const cartData = JSON.parse(localStorage.getItem(cartKey) || "{}");
       const productIds = Object.keys(cartData);
